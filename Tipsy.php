@@ -35,8 +35,7 @@ class Tipsy extends CWidget
 		$resources = dirname(__FILE__).DIRECTORY_SEPARATOR.'resources';
     
 		// PUBLISH FILES
-    $this->_baseUrl = Yii::app()->assetManager->publish($resources);
-
+    $this->_baseUrl = Yii::app()->assetManager->publish($resources, false, -1, YII_DEBUG);
   }
   
   public function run()
@@ -196,7 +195,21 @@ class Tipsy extends CWidget
       //GENERATE JS CODE
       if(!empty($tipsyID))
       {
-        $jsCode = "\$('".$tipsyID."').tipsy(".CJavaScript::encode($params).");";
+        if(isset($item['searchableDropDown']))
+        {
+          if($item['searchableDropDown'] == true)
+          {
+            $jsCode = "\$('".$tipsyID."').parent().tipsy(".CJavaScript::encode($params).");";
+          }
+          else
+          {
+            $jsCode = "\$('".$tipsyID."').tipsy(".CJavaScript::encode($params).");";
+          }
+        }
+        else
+        {
+          $jsCode = "\$('".$tipsyID."').tipsy(".CJavaScript::encode($params).");";
+        }
         $scriptList[] = $jsCode;
       }
     } //END foreach($items as $item)
@@ -208,7 +221,7 @@ class Tipsy extends CWidget
       // GENERATE INIT FUNCTION
       $jsCode = "\nfunction initTipsy(){\n".
                 "$(\".tipsy-inner, .tipsy\").remove(); \n".
-                implode('', $scriptList).
+                implode(" \n", $scriptList).
                 "\n}\n";
       $cs->registerScript(__CLASS__.'#'.$tipsyID, $jsCode, CClientScript::POS_END);
 
